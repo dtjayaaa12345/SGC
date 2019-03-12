@@ -6,25 +6,19 @@ import os
 from math import log
 from citation import train_regression
 from models import get_model
-from utils import sgc_precompute, load_citation
-from args import get_args
+from utils import sgc_precompute, load_citation, set_seed
+from args import get_citation_args
 import torch
 from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
 
 # Arguments
-args = get_args()
+args = get_citation_args()
 
 # setting random seeds
 set_seed(args.seed, args.cuda)
 
 # Hyperparameter optimization
-if args.model == 'SGC':
-    space = {'weight_decay' : hp.loguniform('weight_decay', log(1e-10), log(1e-4))}
-else:
-    raise NotImplemented
-    # space = {'weight_decay' : hp.loguniform('weight_decay', log(1e-6), log(1e-2)),
-    #          'lr': hp.loguniform('lr', log(1e-3), log(1e-1)),
-    #          'dropout': hp.uniform('dropout', 0., 0.5)}
+space = {'weight_decay' : hp.loguniform('weight_decay', log(1e-10), log(1e-4))}
 
 adj, features, labels, idx_train, idx_val, idx_test = load_citation(args.dataset, args.normalization, args.cuda)
 if args.model == "SGC": features, precompute_time = sgc_precompute(features, adj, args.degree)
